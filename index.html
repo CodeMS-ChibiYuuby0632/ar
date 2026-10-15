@@ -10,6 +10,9 @@
 
 <body>
     <a-scene embedded arjs="sourceType: webcam">
+        <a-assets>
+            <img id="obj" src="../assets/images/Tsur116217_TP_V4.jpg" alt="">
+        </a-assets>
         <a-marker preset="hiro">
             <a-box scale="0.3 0.3 0.3" color="yellowgreen"></a-box>
             <a-box position="0.5 0 0.5" scale="0.3 0.3 0.3" color="red"></a-box>
@@ -20,6 +23,20 @@
             <a-box position="0.5 0 -0.5" scale="0.3 0.3 0.3" color="skyblue"></a-box>
             <a-box position="0 0 -0.5" scale="0.3 0.3 0.3" color="blue"></a-box>
             <a-box position="-0.5 0 -0.5" scale="0.3 0.3 0.3" color="darkblue"></a-box>
+        </a-marker>
+
+        <a-marker preset="kanji">
+            <a-sphere
+                position="0 0 0"
+                material="src:#obj"
+                animation="
+                    property: rotation;
+                    to: 0 360 0;
+                    loop: true;
+                    easing: linear;
+                    dur: 20000;
+                "
+            ></a-sphere>
         </a-marker>
 
         <a-entity camera></a-entity>
