@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <style>
+        * {
+            margin: 0;
+        }
+
+        body {
+            padding: 30px;
+        }
+
+        header {
+            background-color: orange;
+        }
+
+        h1 {
+            padding: 10px;
+            color: white;
+        }
+
+        .content {
+            padding: 20px;
+        }
+
+        .card {
+            width: 300px;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+            margin: 0 auto;
+            text-align: center;
+            border-radius: 12px;
+            overflow: hidden;
+        }
+
+        #dogImg {
+            width: 250px;
+            height: 250px;
+            object-fit: cover;
+            border-radius: 12px;
+        }
+
+        #button {
+            padding: 4px 50px;
+            background: linear-gradient(135deg, rgb(237, 120, 255), rgb(255, 150, 114));
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 16px;
+            margin-top: 10px;
+        }
+
+        #button:hover {
+            opacity: 0.8;
+        }
+
+        #countText {
+            margin: 10px 0;
+            color: gray;
+            font-size: 14px;
+        }
+
+        #input {
+            width: 220px;
+            padding: 8px;
+            border: solid 1px lightgray;
+            border-radius: 6px;
+            font-size: 14px;
+            text-align: center;
+        }
+    </style>
+</head>
+
+<body>
+    <article class="card">
+        <header>
+            <h1>いぬガチャ</h1>
+        </header>
+        <div class="content">
+            <img id="dogImg" src="dog.png" alt="">
+            <p id="countText">表示回数: 0回</p>
+
+            <!--下のvalue= は初期値を意味する。placeholderと違い、ちゃんと値が入る-->
+            <input id="input" type="text" value="retriever/golden">
+            <button id="button">表示</button>
+        </div>
+    </article>
+    <script>
+        const dogImg = document.getElementById("dogImg");
+        const button = document.getElementById("button");
+        const input = document.getElementById("input");
+        const countText = document.getElementById("countText");
+
+        //localStorageに"count"というものがあれば取得し、なければ0を入れる
+        let count = localStorage.getItem("count") || 0;
+
+        button.addEventListener("click", getPhoto);
+
+        async function getPhoto() {
+
+            //inputのshibaなどをbreedに入れる
+            const breed = input.value;
+
+            //breedにはinputの値が入っている
+            const url = "https://dog.ceo/api/breed/" + breed + "/images/random";
+
+            const response = await fetch(url);
+            const data = await response.json();
+
+            dogImg.src = data.message;
+
+            count++;
+            countText.textContent = "表示回数: " + count + "回";
+
+            //localStorageにcountの値を保存する
+            localStorage.setItem("count", count);
+        }
+
+        //最初の読み込み時に、countの値を表示する
+        countText.textContent = "表示回数: " + count + "回";
+
+    </script>
+</body>
+
+</html>
