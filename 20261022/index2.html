@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <script src="https://aframe.io/releases/1.6.0/aframe.min.js"></script>
+    <script src="https://raw.githack.com/AR-js-org/AR.js/3.4.7/aframe/build/aframe-ar.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/aframe-extras@7.5.4/dist/aframe-extras.min.js"></script>
+
+    <style>
+        #hud {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            z-index: 999;
+        }
+
+        button {
+            width: 64px;
+            height: 30px;
+            border: none;
+            border-radius: 5px;
+            background-color: blue;
+            color: white;
+        }
+
+        button:hover {
+            background-color: darkblue;
+        }
+
+        select {
+            font-size: 18px;
+            padding: 10px 12px;
+            border-radius: 8px;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="hud">
+        <select id="animationSelect">
+            <option value="RobotArmature|Robot_Walking" selected>歩く</option>
+            <option value="RobotArmature|Robot_Dance">踊る</option>
+            <option value="RobotArmature|Robot_Idle">待機</option>
+            <option value="RobotArmature|Robot_Sitting">座る</option>
+            <option value="RobotArmature|Robot_Die">〇ぬ</option>
+        </select>
+        <button id="enlargeButton">拡大</button>
+        <button id="shrinkButton">縮小</button>
+        <button id="rotateButton">回転</button>
+        <button id="reverseButton">逆回転</button>
+    </div>
+
+    <a-scene embedded arjs="sourceType: webcam">
+
+        <a-marker preset="hiro" smooth="true">
+            <a-entity id="model" position="0 0 0.5">
+                <a-gltf-model
+                    id="robot"
+                    src="robot.glb"
+                    position="0 0 0.5"
+                    scale="0.3 0.3 0.3"
+                    rotation="-90 0 0"
+                    animation-mixer="clip: RobotArmature|Robot_Walking">
+                </a-gltf-model>
+            </a-entity>
+
+        </a-marker>
+
+        <a-entity camera></a-entity>
+
+    </a-scene>
+
+    <script>
+        const robot = document.getElementById("robot");
+        const animationSelect = document.getElementById("animationSelect");
+        const model = document.getElementById("model");
+        const enlargeButton = document.getElementById("enlargeButton");
+        const shrinkButton = document.getElementById("shrinkButton");
+        const rotateButton = document.getElementById("rotateButton");
+        const reverseButton = document.getElementById("reverseButton");
+
+        let size = 1;
+        let angle = 0;
+
+        function enlargeModel(){
+            size = size + 0.1;
+            model.setAttribute("scale", `${size} ${size} ${size}`);
+        }
+        function shrinkModel(){
+            size = size - 0.1;
+            model.setAttribute("scale", `${size} ${size} ${size}`);
+        }
+
+        function rotateModel(){
+            angle += 15;
+            model.setAttribute("rotation", `0 0 ${angle}`);
+        }
+        function reverseModel(){
+            angle -= 15;
+            model.setAttribute("rotation", `0 0 ${angle}`);
+        }
+
+        function changeAnimation(){
+            robot.setAttribute("animation-mixer", "clip", animationSelect.value);
+        }
+
+        animationSelect.addEventListener("change", changeAnimation);
+        enlargeButton.addEventListener("click", enlargeModel);
+        shrinkButton.addEventListener("click", shrinkModel);
+        rotateButton.addEventListener("click", rotateModel);
+        reverseButton.addEventListener("click", reverseModel);
+    </script>
+</body>
+
+</html>
