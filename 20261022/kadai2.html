@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <script src="https://aframe.io/releases/1.6.0/aframe.min.js"></script>
+    <script src="https://raw.githack.com/AR-js-org/AR.js/3.4.7/aframe/build/aframe-ar.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/aframe-extras@7.5.4/dist/aframe-extras.min.js"></script>
+
+    <style>
+        .control {
+            display: grid;
+            width: 100%;
+        }
+
+        .hiroHub {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            z-index: 999;
+        }
+
+        .kanjiHub {
+            position: fixed;
+            top: 70px;
+            left: 20px;
+            z-index: 999;
+        }
+
+        .hiroButton {
+            width: 64px;
+            height: 30px;
+            border: none;
+            border-radius: 5px;
+            background-color: blue;
+            color: white;
+        }
+
+        .hiroButton:hover {
+            background-color: darkblue;
+        }
+
+        .kanjiButton {
+            width: 64px;
+            height: 30px;
+            border: none;
+            border-radius: 5px;
+            background-color: red;
+            color: white;
+        }
+
+        .kanjiButton:hover {
+            background-color: darkred;
+        }
+
+        select {
+            font-size: 18px;
+            padding: 10px 12px;
+            border-radius: 8px;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="control">
+        <div class="hiroHub">
+            <select id="hiroAnimationSelect">
+                <option value="Fish_Armature|Swimming_Normal" selected>泳ぐ1</option>
+                <option value="Fish_Armature|Swimming_Impulse">泳ぐ2</option>
+                <option value="Fish_Armature|Swimming_Fast">泳ぐ3</option>
+                <option value="Fish_Armature|Out_Of_Water">跳ねる</option>
+                <option value="Fish_Armature|Attack">攻撃</option>
+                <option value="Fish_Armature|Death">〇ぬ</option>
+            </select>
+            <button id="hiroEnlargeButton" class="hiroButton">拡大</button>
+            <button id="hiroShrinkButton" class="hiroButton">縮小</button>
+            <button id="hiroRotateButton" class="hiroButton">回転</button>
+            <button id="hiroReverseButton" class="hiroButton">逆回転</button>
+            <button id="hiroFloatButton" class="hiroButton">浮く</button>
+            <button id="hiroSinkButton" class="hiroButton">沈む</button>
+        </div>
+        <div class="kanjiHub">
+            <select id="kanjiAnimationSelect">
+                <option value="Fish_Armature|Swimming_Normal" selected>泳ぐ1</option>
+                <option value="Fish_Armature|Swimming_Impulse">泳ぐ2</option>
+                <option value="Fish_Armature|Swimming_Fast">泳ぐ3</option>
+                <option value="Fish_Armature|Out_Of_Water">跳ねる</option>
+                <option value="Fish_Armature|Attack">攻撃</option>
+                <option value="Fish_Armature|Death">〇ぬ</option>
+            </select>
+            <button id="kanjiEnlargeButton" class="kanjiButton">拡大</button>
+            <button id="kanjiShrinkButton" class="kanjiButton">縮小</button>
+            <button id="kanjiRotateButton" class="kanjiButton">回転</button>
+            <button id="kanjiReverseButton" class="kanjiButton">逆回転</button>
+            <button id="kanjiFloatButton" class="kanjiButton">浮く</button>
+            <button id="kanjiSinkButton" class="kanjiButton">沈む</button>
+        </div>
+    </div>
+
+    <a-scene embedded arjs="sourceType: webcam">
+
+        <a-marker preset="hiro" smooth="true">
+            <a-entity id="hiroModel" position="0 0 0" rotation="90 0 0">
+                <a-gltf-model id="clownfish" src="Clownfish.glb" position="0 0 0.5" scale="0.3 0.3 0.3" rotation="-90 0 0"
+                    animation-mixer="clip: Fish_Armature|Swimming_Normal">
+                </a-gltf-model>
+            </a-entity>
+        </a-marker>
+        <a-marker preset="kanji" smooth="true">
+            <a-entity id="kanjiModel" position="0 0 0" rotation="90 0 0">
+                <a-gltf-model id="redSnapper" src="Red_Snapper.glb" position="0 0 0.5" scale="0.3 0.3 0.3" rotation="-90 0 0"
+                    animation-mixer="clip: Fish_Armature|Swimming_Normal">
+                </a-gltf-model>
+            </a-entity>
+        </a-marker>
+
+        <a-entity camera></a-entity>
+
+    </a-scene>
+
+    <script>
+        const clownfish = document.getElementById("clownfish");
+        const redSnapper = document.getElementById("redSnapper");
+        const hiroAnimationSelect = document.getElementById("hiroAnimationSelect");
+        const kanjiAnimationSelect = document.getElementById("kanjiAnimationSelect");
+        const hiroModel = document.getElementById("hiroModel");
+        const kanjiModel = document.getElementById("kanjiModel");
+        const hiroEnlargeButton = document.getElementById("hiroEnlargeButton");
+        const hiroShrinkButton = document.getElementById("hiroShrinkButton");
+        const hiroRotateButton = document.getElementById("hiroRotateButton");
+        const hiroReverseButton = document.getElementById("hiroReverseButton");
+        const hiroFloatButton = document.getElementById("hiroFloatButton");
+        const hiroSinkButton = document.getElementById("hiroSinkButton");
+        const kanjiEnlargeButton = document.getElementById("kanjiEnlargeButton");
+        const kanjiShrinkButton = document.getElementById("kanjiShrinkButton");
+        const kanjiRotateButton = document.getElementById("kanjiRotateButton");
+        const kanjiReverseButton = document.getElementById("kanjiReverseButton");
+        const kanjiFloatButton = document.getElementById("kanjiFloatButton");
+        const kanjiSinkButton = document.getElementById("kanjiSinkButton");
+
+        const hiroStatus = {
+            height: 0,
+            size: 1,
+            angle: 0
+        }
+        const kanjiStatus = {
+            height: 0,
+            size: 1,
+            angle: 0
+        }
+
+        function enlargeModel(event) {
+            const modelSelect = event.currentTarget.id;
+
+            if(modelSelect === "hiroEnlargeButton"){
+                hiroStatus.size += 0.1;
+                hiroModel.setAttribute("scale", `${hiroStatus.size} ${hiroStatus.size} ${hiroStatus.size}`);
+            }else{
+                kanjiStatus.size += 0.1;
+                kanjiModel.setAttribute("scale", `${kanjiStatus.size} ${kanjiStatus.size} ${kanjiStatus.size}`);
+            }
+        }
+        function shrinkModel(event) {
+            const modelSelect = event.currentTarget.id;
+            
+            if(modelSelect === "hiroShrinkButton"){
+                hiroStatus.size -= 0.1;
+                hiroModel.setAttribute("scale", `${hiroStatus.size} ${hiroStatus.size} ${hiroStatus.size}`);
+            }else{
+                kanjiStatus.size -= 0.1;
+                kanjiModel.setAttribute("scale", `${kanjiStatus.size} ${kanjiStatus.size} ${kanjiStatus.size}`);
+            }
+        }
+
+        function rotateModel(event) {
+            const modelSelect = event.currentTarget.id;
+            
+            if(modelSelect === "hiroRotateButton"){
+                hiroStatus.angle += 15;
+                hiroModel.setAttribute("rotation", `90 0 ${hiroStatus.angle}`);
+            }else{
+                kanjiStatus.angle += 15;
+                kanjiModel.setAttribute("rotation", `90 0 ${kanjiStatus.angle}`);
+            }
+        }
+        function reverseModel(event) {
+            const modelSelect = event.currentTarget.id;
+            
+            if(modelSelect === "hiroReverseButton"){
+                hiroStatus.angle -= 15;
+                hiroModel.setAttribute("rotation", `90 0 ${hiroStatus.angle}`);
+            }else{
+                kanjiStatus.angle -= 15;
+                kanjiModel.setAttribute("rotation", `90 0 ${kanjiStatus.angle}`);
+            }
+        }
+
+        function floatModel(event) {
+            const modelSelect = event.currentTarget.id;
+
+            if(modelSelect === "hiroFloatButton"){
+                hiroStatus.height += 0.5;
+                hiroModel.setAttribute("position", `0 ${hiroStatus.height} 0`)
+            }else{
+                kanjiStatus.height += 0.5;
+                kanjiModel.setAttribute("position", `0 ${kanjiStatus.height} 0`)
+            }
+        }
+        function sinkModel(event) {
+            const modelSelect = event.currentTarget.id;
+
+            if(modelSelect === "hiroSinkButton"){
+                hiroStatus.height -= 0.5;
+                hiroModel.setAttribute("position", `0 ${hiroStatus.height} 0`)
+            }else{
+                kanjiStatus.height -= 0.5;
+                kanjiModel.setAttribute("position", `0 ${kanjiStatus.height} 0`)
+            }
+        }
+
+        function changeAnimation(event) {
+            const modelSelect = event.currentTarget.id;
+
+            if(modelSelect === "hiroAnimationSelect"){
+                clownfish.setAttribute("animation-mixer", "clip", hiroAnimationSelect.value);
+            }else{
+                redSnapper.setAttribute("animation-mixer", "clip", kanjiAnimationSelect.value);
+            };
+        }
+
+        hiroAnimationSelect.addEventListener("change", changeAnimation);
+        hiroEnlargeButton.addEventListener("click", enlargeModel);
+        hiroShrinkButton.addEventListener("click", shrinkModel);
+        hiroRotateButton.addEventListener("click", rotateModel);
+        hiroReverseButton.addEventListener("click", reverseModel);
+        hiroFloatButton.addEventListener("click", floatModel);
+        hiroSinkButton.addEventListener("click", sinkModel);
+        kanjiAnimationSelect.addEventListener("change", changeAnimation);
+        kanjiEnlargeButton.addEventListener("click", enlargeModel);
+        kanjiShrinkButton.addEventListener("click", shrinkModel);
+        kanjiRotateButton.addEventListener("click", rotateModel);
+        kanjiReverseButton.addEventListener("click", reverseModel);
+        kanjiFloatButton.addEventListener("click", floatModel);
+        kanjiSinkButton.addEventListener("click", sinkModel);
+    </script>
+</body>
+
+</html>
