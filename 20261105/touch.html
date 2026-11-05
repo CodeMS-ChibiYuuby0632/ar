@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+
+    <script src="https://cdn.jsdelivr.net/npm/aframe@1.5.0/dist/aframe-master.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/aframe-extras@7.6.0/dist/aframe-extras.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/gh/projapayuri/aframe-gesture-hands@v0.9.2/aframe-gesture-hands.js"></script>
+</head>
+
+<body>
+    <a-scene hands id="scene">
+        <a-image
+            id="photo"
+            src="../assets/images/photo/p001.jpg"
+            opacity="0.8"
+            width="3.2"
+            height="1.8"
+            rotation="-10 0 0"
+            position="0 0.5 -2"
+        ></a-image>
+        <a-entity>
+            <a-gltf-model
+                id="circle1"
+                src="../assets/models/magic_circle/c_cyan.glb"
+                animation-mixer="clip: MagicCircle_Loop"
+                position="-1.1 -1 -2"
+                rotation="-90 0 0"
+                scale="1 1 1"
+            ></a-gltf-model>
+        </a-entity>
+        <a-entity>
+            <a-gltf-model
+                id="circle2"
+                src="../assets/models/magic_circle/c_rose.glb"
+                animation-mixer="clip: MagicCircle_Loop"
+                position="0 -1 -2"
+                rotation="-90 0 0"
+                scale="1 1 1"
+            ></a-gltf-model>
+        </a-entity>
+        <a-entity>
+            <a-gltf-model
+                id="circle3"
+                src="../assets/models/magic_circle/c_gold.glb"
+                animation-mixer="clip: MagicCircle_Loop"
+                position="1.1 -1 -2"
+                rotation="-90 0 0"
+                scale="1 1 1"
+            ></a-gltf-model>
+        </a-entity>
+        <a-camera position="0 0 0.5"></a-camera>
+    </a-scene>
+
+    <script>
+        const scene = document.getElementById("scene");
+        const photo = document.getElementById("photo");
+        const circle = [
+            document.getElementById("circle1"),
+            document.getElementById("circle2"),
+            document.getElementById("circle3")
+        ]
+        const touchSound = new Audio("../assets/audio/changeMagic.mp3");
+
+        let wasInside = false;
+
+        const photos = [
+            "../assets/images/photo/p001.jpg",
+            "../assets/images/photo/p002.jpg",
+            "../assets/images/photo/p003.jpg"
+        ]
+
+        let index = 0;
+
+        function changePhoto() {
+            const inside1 = scene.components.hands.isPointOnEntity(8, circle[0]);
+            const inside2 = scene.components.hands.isPointOnEntity(8, circle[1]);
+            const inside3 = scene.components.hands.isPointOnEntity(8, circle[2]);
+
+            if ((inside1 || inside2 || inside3) && !wasInside) {
+                if (inside1) {
+                    index = 0
+                }else if (inside2) {
+                    index = 1
+                }else{
+                    index = 2
+                }
+                photo.setAttribute("src", photos[index]);
+
+                touchSound.currentTime = 0;
+                touchSound.play();
+                wasInside = true;
+            }
+            if (!inside1 && !inside2 && !inside3) {
+                wasInside = false;
+            }
+        }
+
+        scene.addEventListener("hand-result", changePhoto);
+    </script>
+</body>
+
+</html>
