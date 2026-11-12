@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+
+    <script src="https://cdn.jsdelivr.net/npm/aframe@1.5.0/dist/aframe-master.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/aframe-extras@7.6.0/dist/aframe-extras.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/gh/projapayuri/aframe-gesture-hands@v0.9.2/aframe-gesture-hands.js"></script>
+
+    <style>
+        html,
+        body {
+            width: 100%;
+            height: 100%;
+        }
+        
+        #hud {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            z-index: 999;
+            background-color: white;
+            width: 500px;
+            border: solid 3px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .nextDisplay {
+            width: 150px;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .timer {
+            display: flex;
+            justify-content: right;
+            gap: 20px;
+            font-size: 20px;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="hud">
+        <div class="nextDisplay">
+            <h1 >Next:</h1>
+            <h1 id="nextNum">1</h1>
+        </div>
+        <div class="timer">
+            <p>Time:</p>
+            <p id="timeDisplay">-</p>
+            <p>BestTime:</p>
+            <p id="bestTimeDisplay">-</p>
+        </div>
+    </div>
+    <a-scene hands id="scene">
+        <!-- 動的生成用の親要素 -->
+        <a-entity id="grid-container"></a-entity>
+
+        <a-camera position="0 0 5"></a-camera>
+    </a-scene>
+
+    <script>
+        const buttons = {};
+        const numbers = {};
+        let numberList = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16];
+        let currentNumber = 1;
+
+        let startTime = null;
+        let bestTime = null;
+        
+        function shuffleNumber(){
+            for (let i = numberList.length - 1; i > 0; i--){
+                const j = Math.floor(Math.random() * (i + 1));
+                [numberList[i], numberList[j]] = [numberList[j], numberList[i]];
+            }
+        }
+        
+        shuffleNumber()
+
+        const scene = document.getElementById("scene");
+        const nextNum = document.getElementById("nextNum");
+        const timeDisplay = document.getElementById("timeDisplay");
+        const bestTimeDisplay = document.getElementById("bestTimeDisplay");
+        const touchSound = new Audio("../assets/audio/photo/touch.mp3");
+        const completedSound = new Audio("../assets/audio/success.mp3");
+        const bestTimeSound = new Audio("../assets/audio/bestTime.mp3");
+        
+        // AI使用
+        const container = document.querySelector('#grid-container');
+        const cols = 4;
+        const spacing = 1.5; // 配置間隔
+        const startX = -2.25;
+        const startY = 2.25;
+
+        for (let i = 0; i < 16; i++) {
+            const idNum = i + 1;
+            const row = Math.floor(i / cols);
+            const col = i % cols;
+
+            // 座標の計算
+            const x = startX + (col * spacing);
+            const y = startY - (row * spacing);
+
+            // 1. button（plane）の作成
+            const plane = document.createElement('a-plane');
+            plane.setAttribute('id', `button${idNum}`);
+            plane.setAttribute('position', `${x} ${y} 0`);
+            plane.setAttribute('color', 'white');
+            plane.setAttribute('number', numberList[i]);
+            // 必要であれば width, height, color などもここで設定可能
+            // plane.setAttribute('width', '1');
+            // plane.setAttribute('height', '1');
+
+            // 2. number（text）の作成
+            const text = document.createElement('a-text');
+            text.setAttribute('id', `number${idNum}`);
+            // プレーンの少し左側に数値を配置するオフセット（元のコードの配置を再現）
+            text.setAttribute('position', `${x - 0.5} ${y} 0`);
+            text.setAttribute('value', numberList[i]);
+            text.setAttribute('color', 'black');
+            text.setAttribute('scale', '3 3 3');
+
+            // シーンに追加
+            container.appendChild(plane);
+            container.appendChild(text);
+            //ここまでAI
+
+            buttons[`button${idNum}`] = plane;
+            buttons[`wasInside${idNum}`] = false;
+            numbers[`number${idNum}`] = text;
+        }
+
+        function updateTimer() {
+            if (startTime != null) {
+                const elapsedTime = (Date.now() - startTime) / 1000;
+                if (timeDisplay) {
+                    timeDisplay.textContent = elapsedTime.toFixed(2) + "秒";
+                }
+            }
+            // AI作成
+            // 画面の描画更新のタイミングに合わせて自分自身を再度呼び出す（パラパラマンガの要領）
+            requestAnimationFrame(updateTimer);
+        }
+
+        // タイマー更新ループのスタート
+        requestAnimationFrame(updateTimer);
+
+        // ここまでAI
+
+        function pushButton() {
+            for (let i = 1; i < 17; i++) {
+                const inside = scene.components.hands.isPointOnEntity(8, buttons[`button${i}`]);
+
+                if (inside && !buttons[`wasInside${i}`]){
+                    const num = parseInt(buttons[`button${i}`].getAttribute('number'), 10);
+                    if (num === currentNumber) {
+                        buttons[`button${i}`].setAttribute('color', 'red');
+                        currentNumber++;
+                        if (currentNumber === 2) {
+                            startTime = Date.now();
+                        }
+                        if (currentNumber === 17) {
+                            resetNumber();
+                        } else {
+                            touchSound.currentTime = 0;
+                            touchSound.play();
+                        }
+                        nextNum.textContent = currentNumber;
+                    }
+                }
+                buttons[`wasInside${i}`] = inside;
+            }
+        }
+
+        function resetNumber() {
+            currentNumber = 1;
+            shuffleNumber();
+            for (let i = 1; i < 17; i++) {
+                buttons[`button${i}`].setAttribute('color', 'white');
+                buttons[`button${i}`].setAttribute('number', numberList[i-1]);
+                numbers[`number${i}`].setAttribute('value', numberList[i-1]);
+            }
+            const elapsedTime = (Date.now() - startTime) / 1000;
+            if (bestTime === null || elapsedTime < bestTime) {
+                bestTime = elapsedTime;
+                bestTimeDisplay.textContent = bestTime.toFixed(2) + "秒";
+                bestTimeSound.currentTime = 0;
+                bestTimeSound.play();
+            } else {
+                completedSound.currentTime = 0;
+                completedSound.play();
+            }
+            startTime = null;
+        }
+
+        scene.addEventListener("hand-result", pushButton);
+    </script>
+</body>
+
+</html>
