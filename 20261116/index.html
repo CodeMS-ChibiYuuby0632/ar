@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <script src="https://aframe.io/releases/1.6.0/aframe.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/gh/projapayuri/aframe-vr-kit@v0.2.0/vr-kit.js"></script>
+    <style>
+        #hud {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            z-index: 999;
+            padding: 12px;
+        }
+
+        select {
+            font-size: 18px;
+            padding: 4px 8px;
+            width: 200px;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="hud">
+        <select name="" id="avatarChoice">
+            <option value="robot">ロボット</option>
+            <option value="wolf" selected>狼</option>
+        </select>
+        <select name="" id="skyChoice">
+            <option value="noon" selected>昼</option>
+            <option value="evening">夕方</option>
+            <option value="night">夜</option>
+        </select>
+    </div>
+    <a-scene>
+        <a-sky color="lightblue" id="skybox"></a-sky>
+        <a-plane
+            rotation="-90 0 0"
+            width="30"
+            height="30"
+            color="darkseagreen"
+        ></a-plane>
+
+        <a-entity
+            id="avatar"
+            gltf-model="../assets/models/wolf.glb"
+            position="0 0 -3"
+            scale="0.5 0.5 0.5"
+            avatar="
+                view: third;
+                avatarDirection: 180;
+                walk: Gallop;
+                idle: Idle;
+                cameraFollow: true;
+                cameraOffset:0 1.5 2;
+            "
+        ></a-entity>
+
+        <a-box color="gold" position="0 2 -5"></a-box>
+    </a-scene>
+
+    <script>
+        const avatar = document.getElementById("avatar");
+        const skybox = document.getElementById("skybox");
+        const avatarChoice = document.getElementById("avatarChoice");
+        const skyChoice = document.getElementById("skyChoice");
+
+        function changeAvatar() {
+            avatar.setAttribute("gltf-model", `../assets/models/${avatarChoice.value}.glb`);
+            if (avatarChoice.value === "robot") {
+                avatar.setAttribute("scale", "0.3 0.3 0.3");
+                avatar.setAttribute("avatar-motion", {
+                    walk: "Robot_Walking",
+                    idle: "Robot_Wave"
+                });
+            }else if (avatarChoice.value === "wolf") {
+                avatar.setAttribute("scale", "0.5 0.5 0.5");
+                avatar.setAttribute("avatar-motion", {
+                    walk: "Gallop",
+                    idle: "Idle"
+                });
+            }
+        }
+
+        function changeSky() {
+            if (skyChoice.value === "noon") {
+                skybox.setAttribute("color", "lightblue");
+            }else if (skyChoice.value === "evening") {
+                skybox.setAttribute("color", "orange");
+            }else if (skyChoice.value === "night") {
+                skybox.setAttribute("color", "darkblue");
+            }
+        }
+
+        avatarChoice.addEventListener("change", changeAvatar);
+        skyChoice.addEventListener("change", changeSky);
+    </script>
+</body>
+
+</html>
