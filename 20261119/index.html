@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Document</title>
+    <link rel="icon" href="data:,">
+    <script src="https://aframe.io/releases/1.6.0/aframe.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/gh/projapayuri/aframe-vr-kit@v0.3.0/vr-kit.js"></script>
+    <style>
+        #hud {
+            position: fixed;
+            top: 10px;
+            left: 10px;
+            z-index: 999;
+        }
+
+        select {
+            font-size: 18px;
+            padding: 4px 8px;
+            width: 200px;
+        }
+        
+        p {
+            color: white;
+        }
+
+        footer {
+            position: fixed;
+            top: 550px;
+            left: 10px;
+            z-index: 999;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="hud">
+        <select name="" id="avatarChoice">
+            <option value="../assets/models/robot.glb">ロボット</option>
+            <option value="../assets/models/wolf.glb">狼</option>
+        </select>
+        <p id="countText">0 / 3</p>
+        <p id="resultText"></p>
+    </div>
+
+    <footer>
+        <p>City Scene by J-Toastie [CC-BY] (https://creativecommons.org/licenses/by/3.0/) via Poly Pizza (https://poly.pizza/m/xbGN3wvccv)</p>
+    </footer>
+
+    <a-scene>
+        <a-sky color="lightblue"></a-sky>
+        <!-- <a-plane rotation="-90 0 0" width="30" height="30" color="darkseagreen"></a-plane> -->
+        <a-entity
+            id="map"
+            gltf-model="../assets/models/city.glb"
+            position="0 0 -10"
+            scale="5 5 5"
+            walkable
+        ></a-entity>
+
+        <a-entity
+            gltf-model="../assets/models/cabin.glb"
+            position="-15 0 25"
+            rotation="0 180 0"
+            scale="30 30 30"
+        ></a-entity>
+        <a-entity
+            gltf-model="../assets/models/house.glb"
+            position="15 0 30"
+            scale="11 11 11"
+        ></a-entity>
+
+        <a-entity id="avatar" gltf-model="../assets/models/robot.glb" position="0 0 -3" scale="0.3 0.3 0.3" avatar="
+            view:third;
+            avatarDirection:180;
+            walk: Robot_Walking;
+            idle: Robot_Wave;
+            cameraFollow:false;
+            moveSpeed: 1;
+            ">
+        </a-entity>
+
+        <a-box id="box1" color="gold" position="0 0.5 -5" solid></a-box>
+        <a-box id="box2" color="gold" position="-52 0.5 -60" solid></a-box>
+        <a-box id="box3" color="gold" position="30 0.5 -55" solid></a-box>
+    </a-scene>
+
+    <script>
+        const avatar = document.getElementById("avatar");
+        const box1 = document.getElementById("box1");
+        const box2 = document.getElementById("box2");
+        const box3 = document.getElementById("box3");
+
+        const avatarChoice = document.getElementById("avatarChoice");
+        const countText = document.getElementById("countText");
+        const resultText = document.getElementById("resultText");
+
+        const getBoxSE = new Audio("../assets/audio/getBox.mp3");
+        const clearSE = new Audio("../assets/audio/clear.mp3");
+
+        let count = 0;
+
+        const boxGot = [false, false, false];
+
+        function changeAvatar() {
+            if (avatarChoice.value === "../assets/models/wolf.glb") {
+                avatar.setAttribute("gltf-model", avatarChoice.value);
+                avatar.setAttribute("scale", "0.5 0.5 0.5");
+                avatar.setAttribute(
+                    "avatar-motion", {
+                    walk: "Gallop",
+                    idle: "Idle"
+                })
+            }
+
+            if (avatarChoice.value === "../assets/models/robot.glb") {
+                avatar.setAttribute("gltf-model", avatarChoice.value);
+                avatar.setAttribute("scale", "0.3 0.3 0.3");
+                avatar.setAttribute(
+                    "avatar-motion", {
+                    walk: "Robot_Walking",
+                    idle: "Robot_Wave"
+                })
+            }
+        }
+
+        function checkBox() {
+            if (isNear(avatar, box1, 1.5) && !boxGot[0]) {
+                box1.setAttribute("visible", false);
+                count++;
+                boxGot[0] = true;
+                getBoxSE.currentTime = 0;
+                getBoxSE.play();
+            }
+            if (isNear(avatar, box2, 1.5) && !boxGot[1]) {
+                box2.setAttribute("visible", false);
+                count++;
+                boxGot[1] = true;
+                getBoxSE.currentTime = 0;
+                getBoxSE.play();
+            }
+            if (isNear(avatar, box3, 1.5) && !boxGot[2]) {
+                box3.setAttribute("visible", false);
+                count++;
+                boxGot[2] = true;
+                getBoxSE.currentTime = 0;
+                getBoxSE.play();
+            }
+
+            countText.textContent = count + " / 3"
+            if (count === 3 && resultText.textContent === "") {
+                resultText.textContent = "ゲームクリア！"
+                avatar.setAttribute("avatar", "enabled", false);
+                clearSE.play()
+            }
+        }
+
+        avatarChoice.addEventListener("change", changeAvatar);
+        setInterval(checkBox, 100)
+    </script>
+</body>
+
+
+</html>
